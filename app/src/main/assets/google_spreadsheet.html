@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no"/>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>Data from a Spreadsheet</title>
+    <script type="text/javascript" src="https://www.google.com/jsapi"></script>
+    <script type="text/javascript">
+        var contacts = new Array();
+        init();
+
+        function test() {
+            window.GoogleDocBridge.test("asdfsfsdf");
+            window.GoogleDocBridge.test("asdfsfsdf1");
+            window.GoogleDocBridge.test("asdfsfsdf2");
+        }
+
+        function init() {
+            google.load("visualization", '1', {});
+            google.setOnLoadCallback(loadCallBack);
+        }
+
+        function loadCallBack() {
+            // sample https://docs.google.com/spreadsheet/ccc?key=0Aj1OhBXBSV71dGROZGFOTkIydVhKUGxzOUgwSGhfWEE&usp=docslist_api#gid=0
+            var query = new google.visualization.Query('https://docs.google.com/spreadsheet/ccc?key=0Aj1OhBXBSV71dGROZGFOTkIydVhKUGxzOUgwSGhfWEE&usp=docslist_api#gid=0');
+            query.send(handleQueryResponse);
+        }
+
+        function handleQueryResponse(response) {
+            if (response.isError()) {
+                window.GoogleDocBridge.test('Error in query: ' + response.getMessage() + ' ' + response.getDetailedMessage());
+                return;
+            }
+            var data = response.getDataTable();
+
+            var rowInds = data.getSortedRows([
+                {column: 1}
+            ]);
+            var result = "";
+
+            for (var i = 0; i < rowInds.length; i++) {
+                var name, email, rank, phone;
+
+                name = data.getValue(rowInds[i], 0);
+                rank = data.getValue(rowInds[i], 1);
+
+                phone = data.getValue(rowInds[i], 2);
+                phone = phone.split("-").join("");
+                // 나중에 수정할 것!
+                phone = phone.substr(0, 3) + "-" + phone.substr(3, 4) + "-" + phone.substr(7);
+
+                email = data.getValue(rowInds[i], 3);
+
+                result = "{\"name\"=\"" + name + "\",\"rank\"=\"" + rank + "\",\"phone\"=\"" + phone + "\",\"email\"=\"" + email + "\"}";
+
+                contacts.push(result);
+            }
+        }
+
+        function sendContacts(){
+            for(i=0; i<contacts.length; i++)
+                window.GoogleDocBridge.addContact(contacts[i]);
+        }
+    </script>
+</head>
+<body>
+</body>
+</html>
